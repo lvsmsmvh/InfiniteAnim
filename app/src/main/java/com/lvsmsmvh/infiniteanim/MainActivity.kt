@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         buttons.add(AnimButton(findViewById(R.id.button2), "ENLARGE_MEDIUM", false))
         buttons.add(AnimButton(findViewById(R.id.button3), "ENLARGE_BIG", false))
         buttons.add(AnimButton(findViewById(R.id.button4), "ENLARGE_BIG_AND_FAST", false))
-        buttons.add(AnimButton(findViewById(R.id.button5), "MOVE_DOWN", false))
+        buttons.add(AnimButton(findViewById(R.id.button5), "APPEAR_SLOW_ONCE", false))
 
         buttons.forEachIndexed { index, animButton ->
             animButton.button.text = animButton.text
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
                         1 -> anim.enlargeMediumOn(animButton.button)
                         2 -> anim.enlargeBigOn(animButton.button)
                         3 -> anim.enlargeBigAndFastOn(animButton.button)
-                        4 -> anim.moveDownOn(animButton.button)
+                        4 -> anim.appearSlowOn(animButton.button, doOnlyOnce = true)
                     }
                 }
             }

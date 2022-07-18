@@ -18,29 +18,68 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
         ENLARGE_MEDIUM(R.anim.animation_enlarge_medium),
         ENLARGE_BIG(R.anim.animation_enlarge_big),
         ENLARGE_BIG_AND_FAST(R.anim.animation_enlarge_big_and_fast),
-        MOVE_DOWN(R.anim.animation_move_up_down);
+        MOVE_DOWN(R.anim.animation_move_up_down),
+        APPEAR_ALPHA_SLOW(R.anim.animation_alpha_appear_slow),
+        APPEAR_ALPHA_NORMAL(R.anim.animation_alpha_appear_normal),
+        APPEAR_ALPHA_FAST(R.anim.animation_alpha_appear_fast),
     }
 
     private val mapIsViewEnabled = mutableMapOf<View, Boolean>()
 
-    fun enlargeBigAndFastOn(view: View, startOffset: Long = 0L, repeatDelay: Long = 0L) {
-        animOn(view, AnimType.ENLARGE_BIG_AND_FAST, startOffset, repeatDelay)
+    fun appearSlowOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.APPEAR_ALPHA_SLOW, startOffset, repeatDelay, doOnlyOnce)
     }
 
-    fun enlargeSmallOn(view: View, startOffset: Long = 0L, repeatDelay: Long = 0L) {
-        animOn(view, AnimType.ENLARGE_SMALL, startOffset, repeatDelay)
+    fun appearOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.APPEAR_ALPHA_NORMAL, startOffset, repeatDelay, doOnlyOnce)
     }
 
-    fun enlargeMediumOn(view: View, startOffset: Long = 0L, repeatDelay: Long = 0L) {
-        animOn(view, AnimType.ENLARGE_MEDIUM, startOffset, repeatDelay)
+    fun appearFastOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.APPEAR_ALPHA_FAST, startOffset, repeatDelay, doOnlyOnce)
     }
 
-    fun enlargeBigOn(view: View, startOffset: Long = 0L, repeatDelay: Long = 0L) {
-        animOn(view, AnimType.ENLARGE_BIG, startOffset, repeatDelay)
+    fun enlargeBigAndFastOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.ENLARGE_BIG_AND_FAST, startOffset, repeatDelay, doOnlyOnce)
     }
 
-    fun moveDownOn(view: View, startOffset: Long = 0L, repeatDelay: Long = 0L) {
-        animOn(view, AnimType.MOVE_DOWN, startOffset, repeatDelay)
+    fun enlargeSmallOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.ENLARGE_SMALL, startOffset, repeatDelay, doOnlyOnce)
+    }
+
+    fun enlargeMediumOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.ENLARGE_MEDIUM, startOffset, repeatDelay, doOnlyOnce)
+    }
+
+    fun enlargeBigOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.ENLARGE_BIG, startOffset, repeatDelay, doOnlyOnce)
+    }
+
+    fun moveDownOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.MOVE_DOWN, startOffset, repeatDelay, doOnlyOnce)
     }
 
     fun cancelOn(view: View) {
@@ -49,34 +88,47 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
         view.animation?.cancel()
     }
 
-    private fun animOn(view: View, animType: AnimType, startOffset: Long, delay: Long) {
+    private fun animOn(
+        view: View,
+        animType: AnimType,
+        startOffset: Long,
+        delay: Long,
+        doOnlyOnce: Boolean
+    ) {
         cancelOn(view)
         addToMap(view)
         val anim = AnimationUtils.loadAnimation(view.context, animType.animRes)
-        anim.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation?) {
-            }
 
-            override fun onAnimationRepeat(animation: Animation?) {
-            }
+        if (!doOnlyOnce) {
+            anim.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation?) {
+                }
 
-            override fun onAnimationEnd(animation: Animation?) {
-                Thread {
-                    Thread.sleep(delay)
-                    if (!isViewEnabled(view)) return@Thread
-                    if (lifecycle.currentState == Lifecycle.State.DESTROYED) return@Thread
-                    Handler(Looper.getMainLooper()).post {
-                        view.startAnimation(anim)
-                    }
-                }.start()
-            }
-        })
+                override fun onAnimationRepeat(animation: Animation?) {
+                }
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    Thread {
+                        Thread.sleep(delay)
+                        Handler(Looper.getMainLooper()).post {
+                            tryToPlayAnim(view, anim)
+                        }
+                    }.start()
+                }
+            })
+        }
 
 
         Handler(Looper.getMainLooper()).postDelayed({
-            if (lifecycle.currentState == Lifecycle.State.DESTROYED) return@postDelayed
-            view.startAnimation(anim)
+            tryToPlayAnim(view, anim)
         }, startOffset)
+    }
+
+    private fun tryToPlayAnim(view: View, anim: Animation) {
+        if (!isViewEnabled(view)) return
+        if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
+        view.startAnimation(anim)
+
     }
 
     private fun addToMap(view: View) {
