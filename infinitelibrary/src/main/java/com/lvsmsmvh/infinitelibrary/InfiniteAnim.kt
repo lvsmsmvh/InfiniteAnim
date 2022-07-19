@@ -5,6 +5,8 @@ import android.os.Looper
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 
@@ -22,6 +24,16 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
         APPEAR_ALPHA_SLOW(R.anim.animation_alpha_appear_slow),
         APPEAR_ALPHA_NORMAL(R.anim.animation_alpha_appear_normal),
         APPEAR_ALPHA_FAST(R.anim.animation_alpha_appear_fast),
+        DISAPPEAR_ALPHA_SLOW(R.anim.animation_alpha_disappear_slow),
+        DISAPPEAR_ALPHA_NORMAL(R.anim.animation_alpha_disappear_normal),
+        DISAPPEAR_ALPHA_FAST(R.anim.animation_alpha_disappear_fast),
+        ;
+
+        fun isAppear() = this == APPEAR_ALPHA_SLOW ||
+                this == APPEAR_ALPHA_NORMAL || this == APPEAR_ALPHA_FAST
+
+        fun isDisappear() = this == DISAPPEAR_ALPHA_SLOW ||
+                this == DISAPPEAR_ALPHA_NORMAL || this == DISAPPEAR_ALPHA_FAST
     }
 
     private val mapIsViewEnabled = mutableMapOf<View, Boolean>()
@@ -45,6 +57,27 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
         doOnlyOnce: Boolean = false,
     ) {
         animOn(view, AnimType.APPEAR_ALPHA_FAST, startOffset, repeatDelay, doOnlyOnce)
+    }
+
+    fun disappearSlowOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.DISAPPEAR_ALPHA_SLOW, startOffset, repeatDelay, doOnlyOnce)
+    }
+
+    fun disappearOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.DISAPPEAR_ALPHA_NORMAL, startOffset, repeatDelay, doOnlyOnce)
+    }
+
+    fun disappearFastOn(
+        view: View, startOffset: Long = 0L, repeatDelay: Long = 0L,
+        doOnlyOnce: Boolean = false,
+    ) {
+        animOn(view, AnimType.DISAPPEAR_ALPHA_FAST, startOffset, repeatDelay, doOnlyOnce)
     }
 
     fun enlargeBigAndFastOn(
@@ -118,6 +151,21 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
             })
         }
 
+        if (doOnlyOnce && animType.isDisappear()) {
+            anim.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation?) {
+                }
+
+                override fun onAnimationRepeat(animation: Animation?) {
+                }
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    view.isInvisible = true
+                    view.alpha = 1f
+                }
+            })
+        }
+
 
         Handler(Looper.getMainLooper()).postDelayed({
             tryToPlayAnim(view, anim)
@@ -128,7 +176,6 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
         if (!isViewEnabled(view)) return
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
         view.startAnimation(anim)
-
     }
 
     private fun addToMap(view: View) {

@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         buttons.add(AnimButton(findViewById(R.id.button1), "ENLARGE_SMALL", false))
         buttons.add(AnimButton(findViewById(R.id.button2), "ENLARGE_MEDIUM", false))
         buttons.add(AnimButton(findViewById(R.id.button3), "ENLARGE_BIG", false))
-        buttons.add(AnimButton(findViewById(R.id.button4), "ENLARGE_BIG_AND_FAST", false))
+        buttons.add(AnimButton(findViewById(R.id.button4), "DISAPPEAR_SLOW_ONCE", false))
         buttons.add(AnimButton(findViewById(R.id.button5), "APPEAR_SLOW_ONCE", false))
 
         buttons.forEachIndexed { index, animButton ->
@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
                         0 -> anim.enlargeSmallOn(animButton.button)
                         1 -> anim.enlargeMediumOn(animButton.button)
                         2 -> anim.enlargeBigOn(animButton.button)
-                        3 -> anim.enlargeBigAndFastOn(animButton.button)
+                        3 -> anim.disappearSlowOn(animButton.button, doOnlyOnce = true)
                         4 -> anim.appearSlowOn(animButton.button, doOnlyOnce = true)
                     }
                 }
