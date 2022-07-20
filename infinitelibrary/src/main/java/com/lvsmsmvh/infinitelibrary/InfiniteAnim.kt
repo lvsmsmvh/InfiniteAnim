@@ -117,8 +117,9 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
 
     fun cancelOn(view: View) {
         mapIsViewEnabled[view] = false
-        view.clearAnimation()
         view.animation?.cancel()
+        view.animation?.setAnimationListener(null)
+        view.clearAnimation()
     }
 
     private fun animOn(
@@ -151,6 +152,24 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
             })
         }
 
+        if (doOnlyOnce && animType.isAppear()) {
+//            view.isVisible = true
+//            view.alpha = 0f
+            anim.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation?) {
+                }
+
+                override fun onAnimationRepeat(animation: Animation?) {
+                }
+
+                override fun onAnimationEnd(animation: Animation?) {
+                    view.isInvisible = false
+                    cancelOn(view)
+//                    view.alpha = 1f
+                }
+            })
+        }
+
         if (doOnlyOnce && animType.isDisappear()) {
             anim.setAnimationListener(object : Animation.AnimationListener {
                 override fun onAnimationStart(animation: Animation?) {
@@ -161,7 +180,8 @@ class InfiniteAnim(private val lifecycle: Lifecycle) {
 
                 override fun onAnimationEnd(animation: Animation?) {
                     view.isInvisible = true
-                    view.alpha = 1f
+                    cancelOn(view)
+//                    view.alpha = 0f
                 }
             })
         }
